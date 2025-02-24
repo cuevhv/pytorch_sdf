@@ -44,12 +44,21 @@ class BVHFunction(autograd.Function):
             queue_size=BVHFunction.QUEUE_SIZE,
             sort_points_by_morton=BVHFunction.SORT_POINTS_BY_MORTON,
         )
-        ctx.save_for_backward(triangles, *outputs)
+        ctx.save_for_backward(points, triangles, *outputs)
         return outputs[0], outputs[1], outputs[2], outputs[3]
 
     @staticmethod
-    def backward(ctx, grad_output, *args, **kwargs):
-        raise NotImplementedError
+    def backward(ctx, grad_distances, *unused):
+        # Retrieve saved tensors from the forward pass.
+        # (Make sure in your forward pass you save both the inputs and any intermediates you need.)
+        points, triangles, distances, closest_points, closest_faces, closest_bcs = ctx.saved_tensors
+
+        # Compute gradients for the query points.
+        # grad_distances is of shape [B, Q] and points/closest_points are [B, Q, 3]
+        grad_points = 2 * (points - closest_points) * grad_distances.unsqueeze(-1)
+        grad_triangles = torch.zeros_like(triangles)
+
+        return grad_triangles, grad_points
 
 
 class BVH(nn.Module):
@@ -75,7 +84,7 @@ class BVH(nn.Module):
         BVHFunction.QUEUE_SIZE = queue_size
         BVHFunction.SORT_POINTS_BY_MORTON = sort_points_by_morton
 
-    @torch.no_grad()
+    # @torch.no_grad()
     def forward(
             self,
             triangles: Tensor,

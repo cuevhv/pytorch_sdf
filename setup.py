@@ -25,11 +25,11 @@ import torch
 from torch.utils.cpp_extension import BuildExtension, CUDAExtension
 
 # Package meta-data.
-NAME = 'bvh_distance_queries'
+NAME = 'pytorch_sdf'
 DESCRIPTION = 'PyTorch module for Mesh self intersection detection'
 URL = ''
-EMAIL = 'vassilis.choutas@tuebingen.mpg.de'
-AUTHOR = 'Vassilis Choutas'
+EMAIL = 'hanz.cuevas@tuebingen.mpg.de'
+AUTHOR = 'Hanz Cuevas Velasquez'
 REQUIRES_PYTHON = '>=3.6.0'
 VERSION = '0.1.0'
 
@@ -72,6 +72,13 @@ bvh_extension = CUDAExtension('bvh_distance_queries_cuda',
                               include_dirs=bvh_include_dirs,
                               extra_compile_args=bvh_extra_compile_args)
 
+solid_angles_extension = CUDAExtension('solid_angles_cuda',
+                                        ['src/solid_angles_cuda.cpp',
+                                         'src/solid_angles_cuda_kernel.cu'],
+                                        # include_dirs=bvh_include_dirs,
+                                        # extra_compile_args=bvh_extra_compile_args
+                                        )
+
 setup(name=NAME,
       version=about['__version__'],
       description=DESCRIPTION,
@@ -82,7 +89,7 @@ setup(name=NAME,
       python_requires=REQUIRES_PYTHON,
       url=URL,
       packages=find_packages(),
-      ext_modules=[bvh_extension],
+      ext_modules=[bvh_extension, solid_angles_extension],
       classifiers=[
           "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
           "Environment :: Console",

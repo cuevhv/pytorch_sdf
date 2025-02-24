@@ -16,6 +16,6 @@
 # Contact: vassilis.choutas@tuebingen.mpg.de
 # Contact: ps-license@tuebingen.mpg.de
 
-import torch
-from .bvh_search_tree import BVH
-from .mesh_distance import PointToMeshResidual
+# import torch
+# from .bvh_search_tree import BVH
+# from .mesh_distance import PointToMeshResidual
