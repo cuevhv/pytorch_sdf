@@ -40,7 +40,7 @@ if __name__ == "__main__":
     parser.add_argument('--mesh-fn', type=str, dest='mesh_fn',
                         help='A mesh file (.obj, .ply, e.t.c.) to be checked' +
                         ' for collisions')
-    parser.add_argument('--num-query-points', type=int, default=int(1e4),
+    parser.add_argument('--num-query-points', type=int, default=1,
                         dest='num_query_points',
                         help='Number of random query points')
     parser.add_argument('--seed', type=int, default=None,
@@ -54,6 +54,7 @@ if __name__ == "__main__":
 
     # input_mesh = Mesh(filename=mesh_fn)
     input_mesh = trimesh.load(mesh_fn)
+    vertex_normals = input_mesh.vertex_normals
 
     if seed is not None:
         torch.manual_seed(seed)
@@ -71,6 +72,9 @@ if __name__ == "__main__":
     max_vals, _ = torch.max(vertices, dim=0, keepdim=True)
 
     batch_size = 1
+    query_points = vertices[:, :]
+    query_points = query_points[None, ].repeat(batch_size, 1, 1)
+
 
     triangles = vertices[faces].unsqueeze(dim=0)
     triangles = triangles.expand(batch_size, -1, -1, -1)
@@ -78,18 +82,23 @@ if __name__ == "__main__":
     vertices = vertices.unsqueeze(dim=0)
     vertices = vertices.expand(batch_size, -1, -1)
     vertices = vertices.contiguous()
+    vertex_normals = torch.from_numpy(vertex_normals).to(query_points.device).float()
+    vertex_normals = vertex_normals.expand(batch_size, -1, -1,)
+    vertex_normals = vertex_normals.contiguous()
 
-    # make query points that go from -1 to 1
-    query_points = torch.linspace(-1, 1, num_query_points, device=device).reshape(1, -1, 1).repeat(batch_size, 1, 3)
+    # As the points are on the surface, we move them a bit along the normal to have self intersection
+    query_points = query_points + 0.0001 * vertex_normals
+
     query_points = query_points.requires_grad_()
     query_points_np = query_points[0:1].detach().cpu().numpy().squeeze(
         axis=0).astype(np.float32).reshape(-1, 3)
 
-    gt_dist = torch.norm(query_points - vertices[:, :num_query_points], dim=-1)
+    gt_dist = torch.norm(query_points - vertices, dim=-1)
+    print("gt distance", gt_dist)
 
     methods = ['bvh', 'knn', 'cdist']
     for method in methods:
-        print(f'Running method {method}')
+        print(f'Running method {method.upper()}')
         m = sdf.SDF(distance_method=method)
 
         torch.cuda.synchronize()
@@ -102,6 +111,7 @@ if __name__ == "__main__":
         print("distance has grad? ", min_distance.requires_grad)
 
         distances = min_distance.detach().cpu().numpy()[0]
+        print("distances", distances)
         inside = inside.detach().cpu().numpy()[0]
 
         mesh = o3d.geometry.TriangleMesh()

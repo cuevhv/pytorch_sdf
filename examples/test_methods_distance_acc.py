@@ -40,7 +40,7 @@ if __name__ == "__main__":
     parser.add_argument('--mesh-fn', type=str, dest='mesh_fn',
                         help='A mesh file (.obj, .ply, e.t.c.) to be checked' +
                         ' for collisions')
-    parser.add_argument('--num-query-points', type=int, default=int(1e4),
+    parser.add_argument('--num-query-points', type=int, default=1,
                         dest='num_query_points',
                         help='Number of random query points')
     parser.add_argument('--seed', type=int, default=None,
@@ -71,6 +71,11 @@ if __name__ == "__main__":
     max_vals, _ = torch.max(vertices, dim=0, keepdim=True)
 
     batch_size = 1
+    query_points = torch.rand([batch_size, num_query_points, 3], dtype=torch.float32,
+                              device=device) * (max_vals - min_vals) + min_vals
+    query_points = vertices[:num_query_points, :]
+    query_points = query_points[None, ].repeat(batch_size, 1, 1)
+
 
     triangles = vertices[faces].unsqueeze(dim=0)
     triangles = triangles.expand(batch_size, -1, -1, -1)
@@ -78,18 +83,18 @@ if __name__ == "__main__":
     vertices = vertices.unsqueeze(dim=0)
     vertices = vertices.expand(batch_size, -1, -1)
     vertices = vertices.contiguous()
+    query_points[:, :, :] += 0.1
 
-    # make query points that go from -1 to 1
-    query_points = torch.linspace(-1, 1, num_query_points, device=device).reshape(1, -1, 1).repeat(batch_size, 1, 3)
     query_points = query_points.requires_grad_()
     query_points_np = query_points[0:1].detach().cpu().numpy().squeeze(
         axis=0).astype(np.float32).reshape(-1, 3)
 
     gt_dist = torch.norm(query_points - vertices[:, :num_query_points], dim=-1)
+    print("gt distance", gt_dist)
 
     methods = ['bvh', 'knn', 'cdist']
     for method in methods:
-        print(f'Running method {method}')
+        print(f'Running method {method.upper()}')
         m = sdf.SDF(distance_method=method)
 
         torch.cuda.synchronize()
@@ -102,6 +107,7 @@ if __name__ == "__main__":
         print("distance has grad? ", min_distance.requires_grad)
 
         distances = min_distance.detach().cpu().numpy()[0]
+        print("distances", distances)
         inside = inside.detach().cpu().numpy()[0]
 
         mesh = o3d.geometry.TriangleMesh()
@@ -117,8 +123,16 @@ if __name__ == "__main__":
         for inside_point in inside:
             query_pcl.colors.append([0.9, 0.3, 0.3] if inside_point else [0.3, 0.9, 0.3])
 
+        # draw spheres around the query points with radius equal to the distance
+        spheres = []
+        for i in range(num_query_points):
+            spheres.append(o3d.geometry.TriangleMesh.create_sphere(radius=distances[i].item()))
+            spheres[-1].translate(query_points_np[i])
+            spheres[-1].paint_uniform_color([0.3, 0.9, 0.3] if inside[i] else [0.9, 0.3, 0.3])
+
         o3d.visualization.draw_geometries([
             mesh,
             query_pcl,
+            *spheres,
         ])
 
