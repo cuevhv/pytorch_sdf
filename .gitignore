@@ -174,3 +174,6 @@ dmypy.json
 *.exe
 *.out
 *.app
+
+# do not ignore
+!examples/example_meshes/*
