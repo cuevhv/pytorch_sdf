@@ -15,7 +15,7 @@ octrees, and k-d trees](https://dl.acm.org/citation.cfm?id=2383801) to find the 
 specifically, given a batch of meshes (triangles = vertices[faces]) it builds a
 BVH tree for each one, which can then be used for distance queries, then, it computes the sign of the queries using winding numbers.
 
-1. The winding numbers is a cuda kernel re-implementation from [TUCH](https://github.com/muelea/tuch).
+1. The winding numbers is our cuda kernel re-implementation from [TUCH](https://github.com/muelea/tuch).
 2. The BVH kernel code is borrowed from [bvh-distance-queries](https://github.com/YuliangXiu/bvh-distance-queries).
 
 ## Installation
