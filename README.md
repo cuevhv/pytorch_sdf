@@ -50,7 +50,6 @@ Our code obtains the SDF using winding numbers to calculate the inside and outsi
 1. **BVH**. Distance between point to mesh.
     ```python
     from pytorch_sdf import sdf
-    methods = ['bvh', 'knn', 'cdist']
 
     m = sdf.SDF(distance_method='bvh')
 
