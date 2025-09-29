@@ -34,12 +34,12 @@ pip install -r requirements.txt
 ```
 **2. Run the *setup.py* script**
 ```Shell
-pip install .
+pip install . --no-build-isolation
 ```
 
 If you want to modify any part of the code then use the following command:
 ```Shell
-pip install -e .
+pip install -e . --no-build-isolation
 ```
 
 
