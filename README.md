@@ -1,6 +1,8 @@
 # Diferentiable Sign Distance Field (SDF) for pytorch
 This package provides a PyTorch module that returns the SDF using fast winding numbers. The distance is differentiable and the mesh doesn't need to be watertight!
 
+The package is faster than the Trimesh and [previous](https://github.com/muelea/tuch) implementations. 
+
 
 ## Table of Contents
   * [Description](#description)
