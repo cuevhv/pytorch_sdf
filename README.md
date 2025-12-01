@@ -1,4 +1,6 @@
 # Diferentiable Sign Distance Field (SDF) for pytorch
+This package was develop for the work [MAMMA: Markerless Accurate Multi-person Motion Acquisition](https://arxiv.org/pdf/2506.13040).
+
 This package provides a PyTorch module that returns the SDF using fast winding numbers. The distance is differentiable and the mesh doesn't need to be watertight!
 
 The package is faster than the Trimesh and [previous](https://github.com/muelea/tuch) implementations. 
@@ -96,4 +98,17 @@ Our code obtains the SDF using winding numbers to calculate the inside and outsi
 
 1. [open3d](http://www.open3d.org/)
 1. [mesh](https://github.com/MPI-IS/mesh)
+
+
+## Cite
+
+If the tool was useful, please cite:
+
+```bibtex
+@article{cuevas2025mamma,
+  title={MAMMA: Markerless Accurate Multi-person Motion Acquisition},
+  author={Cuevas Velasquez, Hanz and Yiannakidis, Anastasios and Shin, Soyong and Becherini, Giorgio and H{\"o}schle, Markus and Tesch, Joachim and Obersat, Taylor and Alexiadis, Tsvetelina and Halilaj, Eni and Black, Michael J.},
+  journal={arXiv preprint arXiv:2506.13040},
+  year={2025}
+}
 
