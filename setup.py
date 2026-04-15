@@ -63,7 +63,7 @@ bvh_include_dirs = torch.utils.cpp_extension.include_paths() + [
 bvh_extra_compile_args = {'nvcc': ['-DPRINT_TIMINGS=0',
                                    '-DDEBUG_PRINT=0',
                                    '-DERROR_CHECKING=1',
-                                   '-DNUM_THREADS=256',
+                                   '-DBVH_NUM_THREADS=256',
                                    '-DBVH_PROFILING=0',
                                    ],
                           'cxx': []}
